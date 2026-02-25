@@ -1,15 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Open ATS Check — Analyze your resume against ATS standards and compare it with job descriptions for maximum compatibility.">
+    <meta name="description"
+        content="Open ATS Check — Analyze your resume against ATS standards and compare it with job descriptions for maximum compatibility.">
     <title>Open ATS Check — Resume ATS Scanner</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="/static/styles.css">
 </head>
+
 <body>
     <!-- ─── Background Glow ─── -->
     <div class="bg-glow bg-glow-1"></div>
@@ -45,18 +49,23 @@
                 <div class="upload-area" id="dropzone-ats">
                     <div class="upload-icon">📄</div>
                     <h2>Upload Your Resume</h2>
-                    <p>Drag & drop your file here, or <label for="file-ats" class="upload-link">browse</label></p>
+                    <p>Drag & drop your file here, or <span class="upload-link" data-input="file-ats">browse</span></p>
                     <p class="upload-hint">Supports PDF, DOCX, TXT, RTF, HTML — Max 10 MB</p>
                     <input type="file" id="file-ats" accept=".pdf,.docx,.doc,.txt,.rtf,.html,.htm" hidden>
                     <div class="file-preview" id="preview-ats" hidden>
                         <span class="file-name" id="fname-ats"></span>
-                        <button class="btn-clear" onclick="clearFile('ats')" title="Remove file">✕</button>
+                        <button class="btn-clear" data-key="ats" title="Remove file">✕</button>
                     </div>
                 </div>
-                <button class="btn-primary" id="btn-analyze" onclick="runAnalysis()" disabled>
-                    <span class="btn-text">Analyze Resume</span>
-                    <span class="btn-loader" hidden></span>
-                </button>
+                <div class="btn-row">
+                    <button class="btn-primary" id="btn-analyze" onclick="runAnalysis()" disabled>
+                        <span class="btn-text">Analyze Resume</span>
+                        <span class="btn-loader" hidden></span>
+                    </button>
+                    <button class="btn-secondary" id="btn-reset-ats" onclick="resetPanel('ats')" hidden>
+                        ↺ Reset
+                    </button>
+                </div>
             </div>
 
             <!-- Results -->
@@ -70,30 +79,36 @@
                     <div class="upload-area" id="dropzone-compare-cv">
                         <div class="upload-icon">📄</div>
                         <h3>Your Resume</h3>
-                        <p>Drag & drop or <label for="file-compare-cv" class="upload-link">browse</label></p>
+                        <p>Drag & drop or <span class="upload-link" data-input="file-compare-cv">browse</span></p>
                         <p class="upload-hint">PDF, DOCX, TXT, RTF, HTML</p>
                         <input type="file" id="file-compare-cv" accept=".pdf,.docx,.doc,.txt,.rtf,.html,.htm" hidden>
                         <div class="file-preview" id="preview-compare-cv" hidden>
                             <span class="file-name" id="fname-compare-cv"></span>
-                            <button class="btn-clear" onclick="clearFile('compare-cv')" title="Remove file">✕</button>
+                            <button class="btn-clear" data-key="compare-cv" title="Remove file">✕</button>
                         </div>
                     </div>
                     <div class="upload-area" id="dropzone-compare-jd">
                         <div class="upload-icon">💼</div>
                         <h3>Job Description</h3>
-                        <p>Paste below or <label for="file-compare-jd" class="upload-link">upload file</label></p>
+                        <p>Paste below or <span class="upload-link" data-input="file-compare-jd">upload file</span></p>
                         <input type="file" id="file-compare-jd" accept=".pdf,.docx,.doc,.txt,.rtf,.html,.htm" hidden>
                         <div class="file-preview" id="preview-compare-jd" hidden>
                             <span class="file-name" id="fname-compare-jd"></span>
-                            <button class="btn-clear" onclick="clearFile('compare-jd')" title="Remove file">✕</button>
+                            <button class="btn-clear" data-key="compare-jd" title="Remove file">✕</button>
                         </div>
                     </div>
                 </div>
-                <textarea id="jd-text" class="jd-textarea" rows="6" placeholder="Paste the job description or listing here…"></textarea>
-                <button class="btn-primary" id="btn-compare" onclick="runComparison()" disabled>
-                    <span class="btn-text">Compare & Analyze</span>
-                    <span class="btn-loader" hidden></span>
-                </button>
+                <textarea id="jd-text" class="jd-textarea" rows="6"
+                    placeholder="Paste the job description or listing here…"></textarea>
+                <div class="btn-row">
+                    <button class="btn-primary" id="btn-compare" onclick="runComparison()" disabled>
+                        <span class="btn-text">Compare & Analyze</span>
+                        <span class="btn-loader" hidden></span>
+                    </button>
+                    <button class="btn-secondary" id="btn-reset-compare" onclick="resetPanel('compare')" hidden>
+                        ↺ Reset
+                    </button>
+                </div>
             </div>
 
             <!-- Results -->
@@ -117,4 +132,5 @@
 
     <script src="/static/app.js"></script>
 </body>
+
 </html>

@@ -443,6 +443,72 @@ body {
     }
 }
 
+/* ─── Button Row ─── */
+.btn-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.btn-row .btn-primary {
+    margin-top: 0;
+}
+
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 14px 24px;
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-sm);
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-secondary:hover {
+    color: var(--accent-primary);
+    border-color: var(--accent-primary);
+    background: rgba(99, 102, 241, 0.05);
+}
+
+/* ─── Export Bar ─── */
+.export-bar {
+    display: flex;
+    justify-content: center;
+    padding: 20px 0 8px;
+}
+
+.btn-export {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--accent-primary);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    border-radius: var(--radius-sm);
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-export:hover {
+    background: rgba(99, 102, 241, 0.18);
+    border-color: var(--accent-primary);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.2);
+}
+
 /* ─── Results ─── */
 .results {
     margin-top: 28px;

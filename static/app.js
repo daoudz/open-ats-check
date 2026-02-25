@@ -9,6 +9,9 @@ let selectedFiles = {
     'compare-jd': null,
 };
 
+let lastATSData = null;
+let lastCompareData = null;
+
 // ─── Tab Switching ───
 function switchTab(tab) {
     document.querySelectorAll('.tab').forEach(t => {
@@ -29,8 +32,11 @@ function setupDropzone(id, fileInputId, fileKey) {
 
     if (!zone || !input) return;
 
+    // Click on the upload area opens file picker (but NOT on clear button or file preview)
     zone.addEventListener('click', (e) => {
-        if (e.target.closest('.btn-clear') || e.target.closest('.file-preview')) return;
+        // Don't trigger file picker if clicking on clear button, file preview, or upload-link
+        if (e.target.closest('.btn-clear') || e.target.closest('.upload-link')) return;
+        if (e.target.closest('.file-preview')) return;
         input.click();
     });
 
@@ -66,10 +72,8 @@ function handleFileSelect(key, file) {
     selectedFiles[key] = file;
 
     // Show preview
-    const previewId = 'preview-' + key;
-    const fnameId = 'fname-' + key;
-    const preview = document.getElementById(previewId);
-    const fname = document.getElementById(fnameId);
+    const preview = document.getElementById('preview-' + key);
+    const fname = document.getElementById('fname-' + key);
     if (preview && fname) {
         fname.textContent = file.name;
         preview.hidden = false;
@@ -80,9 +84,12 @@ function handleFileSelect(key, file) {
 
 function clearFile(key) {
     selectedFiles[key] = null;
+
+    // Hide preview
     const preview = document.getElementById('preview-' + key);
     if (preview) preview.hidden = true;
-    // Also clear the input
+
+    // Clear the file input value so the same file can be re-selected
     const inputMap = {
         'ats': 'file-ats',
         'compare-cv': 'file-compare-cv',
@@ -90,6 +97,7 @@ function clearFile(key) {
     };
     const input = document.getElementById(inputMap[key]);
     if (input) input.value = '';
+
     updateButtonStates();
 }
 
@@ -103,6 +111,27 @@ function updateButtonStates() {
         const hasJD = !!selectedFiles['compare-jd'] || document.getElementById('jd-text').value.trim().length > 20;
         btnCompare.disabled = !(hasCV && hasJD);
     }
+}
+
+// ─── Reset Panel ───
+function resetPanel(panel) {
+    if (panel === 'ats') {
+        clearFile('ats');
+        const results = document.getElementById('results-ats');
+        if (results) { results.hidden = true; results.innerHTML = ''; }
+        document.getElementById('btn-reset-ats').hidden = true;
+        lastATSData = null;
+    } else if (panel === 'compare') {
+        clearFile('compare-cv');
+        clearFile('compare-jd');
+        const jdText = document.getElementById('jd-text');
+        if (jdText) jdText.value = '';
+        const results = document.getElementById('results-compare');
+        if (results) { results.hidden = true; results.innerHTML = ''; }
+        document.getElementById('btn-reset-compare').hidden = true;
+        lastCompareData = null;
+    }
+    updateButtonStates();
 }
 
 // ─── API Calls ───
@@ -129,8 +158,10 @@ async function runAnalysis() {
             return;
         }
 
+        lastATSData = data;
         renderATSResults(data, resultsEl);
         resultsEl.hidden = false;
+        document.getElementById('btn-reset-ats').hidden = false;
         resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (err) {
         showToast('Network error. Please try again.');
@@ -171,8 +202,10 @@ async function runComparison() {
             return;
         }
 
+        lastCompareData = data;
         renderCompareResults(data, resultsEl);
         resultsEl.hidden = false;
+        document.getElementById('btn-reset-compare').hidden = false;
         resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (err) {
         showToast('Network error. Please try again.');
@@ -218,6 +251,11 @@ function renderATSResults(data, container) {
             ${sections.map(s => renderSectionCard(s)).join('')}
         </div>
         ${allRecos.length ? renderRecommendations(allRecos) : ''}
+        <div class="export-bar">
+            <button class="btn-export" onclick="exportReport('ats')">
+                📥 Export Report
+            </button>
+        </div>
     `;
 
     // Animate after render
@@ -247,6 +285,11 @@ function renderCompareResults(data, container) {
         <h3 style="color:var(--text-heading);margin:28px 0 14px;font-size:16px;">📊 Full ATS Breakdown</h3>
         <div class="section-grid">
             ${sections.map(s => renderSectionCard(s)).join('')}
+        </div>
+        <div class="export-bar">
+            <button class="btn-export" onclick="exportReport('compare')">
+                📥 Export Report
+            </button>
         </div>
     `;
 
@@ -284,7 +327,6 @@ function renderTextPreview(preview) {
 }
 
 function renderScoreHero(score, label) {
-    const color = score >= 70 ? 'var(--accent-green)' : score >= 40 ? 'var(--accent-amber)' : 'var(--accent-red)';
     return `
         <div class="score-hero">
             <h2>${label}</h2>
@@ -411,6 +453,130 @@ function renderKeywordAnalysis(ka) {
     `;
 }
 
+// ─── Export Report ───
+function exportReport(type) {
+    const data = type === 'ats' ? lastATSData : lastCompareData;
+    if (!data) {
+        showToast('No report to export. Run an analysis first.');
+        return;
+    }
+
+    let text = '';
+    const divider = '═'.repeat(60);
+    const subDivider = '─'.repeat(60);
+    const now = new Date().toLocaleString();
+
+    if (type === 'ats') {
+        const fi = data.file_info || {};
+        text += `${divider}\n`;
+        text += `  ATS COMPATIBILITY REPORT\n`;
+        text += `${divider}\n\n`;
+        text += `File: ${fi.filename || 'Unknown'}\n`;
+        text += `Format: ${(fi.format || '').toUpperCase()}  |  Words: ${fi.word_count || '—'}\n`;
+        text += `Date: ${now}\n\n`;
+
+        text += `${subDivider}\n`;
+        text += `  OVERALL SCORE: ${data.overall_score}/100\n`;
+        text += `${subDivider}\n\n`;
+
+        (data.sections || []).forEach(s => {
+            text += `${s.icon} ${s.name}: ${Math.round(s.score)}/100\n`;
+            text += `${'─'.repeat(40)}\n`;
+            (s.findings || []).forEach(f => {
+                text += `  ${f}\n`;
+            });
+            if (s.recommendations && s.recommendations.length) {
+                text += `\n  Recommendations:\n`;
+                s.recommendations.forEach(r => {
+                    text += `  → ${r}\n`;
+                });
+            }
+            text += `\n`;
+        });
+
+    } else if (type === 'compare') {
+        const fi = data.file_info || {};
+        const comp = data.comparison || {};
+        const ats = data.ats_analysis || {};
+
+        text += `${divider}\n`;
+        text += `  JOB MATCH COMPARISON REPORT\n`;
+        text += `${divider}\n\n`;
+        text += `File: ${fi.filename || 'Unknown'}\n`;
+        text += `Date: ${now}\n\n`;
+
+        text += `${subDivider}\n`;
+        text += `  JOB MATCH SCORE: ${comp.match_score}/100\n`;
+        text += `${subDivider}\n\n`;
+
+        if (comp.pros && comp.pros.length) {
+            text += `✅ STRENGTHS\n`;
+            comp.pros.forEach(p => { text += `  + ${p}\n`; });
+            text += `\n`;
+        }
+
+        if (comp.cons && comp.cons.length) {
+            text += `❌ GAPS\n`;
+            comp.cons.forEach(c => { text += `  - ${c}\n`; });
+            text += `\n`;
+        }
+
+        const ka = comp.keyword_analysis || {};
+        if (ka.matched_skills && ka.matched_skills.length) {
+            text += `🔑 MATCHED SKILLS: ${ka.matched_skills.join(', ')}\n`;
+        }
+        if (ka.missing_skills && ka.missing_skills.length) {
+            text += `⚠️ MISSING SKILLS: ${ka.missing_skills.join(', ')}\n`;
+        }
+        text += `\n`;
+
+        if (comp.recommendations && comp.recommendations.length) {
+            text += `💡 RECOMMENDATIONS\n`;
+            comp.recommendations.forEach(r => {
+                const icon = r.action === 'add' ? '➕' : r.action === 'remove' ? '➖' : '🔧';
+                text += `  ${icon} [${(r.priority || 'medium').toUpperCase()}] ${r.text}\n`;
+            });
+            text += `\n`;
+        }
+
+        if (ats.sections) {
+            text += `${subDivider}\n`;
+            text += `  FULL ATS BREAKDOWN (Score: ${ats.overall_score}/100)\n`;
+            text += `${subDivider}\n\n`;
+
+            ats.sections.forEach(s => {
+                text += `${s.icon} ${s.name}: ${Math.round(s.score)}/100\n`;
+                (s.findings || []).forEach(f => {
+                    text += `  ${f}\n`;
+                });
+                text += `\n`;
+            });
+        }
+    }
+
+    // Footer
+    text += `${divider}\n`;
+    text += `  Generated by Open ATS Check\n`;
+    text += `  https://github.com/open-ats-check\n`;
+    text += `  ${now}\n`;
+    text += `${divider}\n`;
+
+    // Download as text file
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const fname = data.file_info?.filename || 'resume';
+    const baseName = fname.replace(/\.[^.]+$/, '');
+    a.download = `${baseName}_ats_report_${type}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showToast('Report exported successfully!');
+}
+
 // ─── Animations ───
 function animateScore(target) {
     const ring = document.getElementById('score-ring');
@@ -470,6 +636,25 @@ document.addEventListener('DOMContentLoaded', () => {
     setupDropzone('dropzone-ats', 'file-ats', 'ats');
     setupDropzone('dropzone-compare-cv', 'file-compare-cv', 'compare-cv');
     setupDropzone('dropzone-compare-jd', 'file-compare-jd', 'compare-jd');
+
+    // Browse link clicks — open the file picker via data-input attribute
+    document.querySelectorAll('.upload-link[data-input]').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const inputId = link.dataset.input;
+            const input = document.getElementById(inputId);
+            if (input) input.click();
+        });
+    });
+
+    // Clear button clicks — remove file and stop propagation
+    document.querySelectorAll('.btn-clear[data-key]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            clearFile(btn.dataset.key);
+        });
+    });
 
     // Also listen to JD text changes for button state
     const jdInput = document.getElementById('jd-text');
