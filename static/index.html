@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Open ATS Check — Analyze your resume against ATS standards and compare it with job descriptions for maximum compatibility.">
+    <title>Open ATS Check — Resume ATS Scanner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <!-- ─── Background Glow ─── -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+
+    <!-- ─── Header ─── -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <span class="logo-icon">◆</span>
+                <span class="logo-text">Open ATS Check</span>
+            </div>
+            <p class="tagline">AI-Powered Resume Scanner</p>
+        </div>
+    </header>
+
+    <!-- ─── Main Content ─── -->
+    <main class="container">
+
+        <!-- Tab Navigation -->
+        <nav class="tabs" role="tablist">
+            <button class="tab active" id="tab-ats" role="tab" aria-selected="true" onclick="switchTab('ats')">
+                <span class="tab-icon">📊</span> ATS Score Check
+            </button>
+            <button class="tab" id="tab-compare" role="tab" aria-selected="false" onclick="switchTab('compare')">
+                <span class="tab-icon">🔍</span> Job Match Compare
+            </button>
+        </nav>
+
+        <!-- ─── ATS CHECK TAB ─── -->
+        <section class="tab-panel active" id="panel-ats" role="tabpanel">
+            <div class="upload-card glass-card">
+                <div class="upload-area" id="dropzone-ats">
+                    <div class="upload-icon">📄</div>
+                    <h2>Upload Your Resume</h2>
+                    <p>Drag & drop your file here, or <label for="file-ats" class="upload-link">browse</label></p>
+                    <p class="upload-hint">Supports PDF, DOCX, TXT, RTF, HTML — Max 10 MB</p>
+                    <input type="file" id="file-ats" accept=".pdf,.docx,.doc,.txt,.rtf,.html,.htm" hidden>
+                    <div class="file-preview" id="preview-ats" hidden>
+                        <span class="file-name" id="fname-ats"></span>
+                        <button class="btn-clear" onclick="clearFile('ats')" title="Remove file">✕</button>
+                    </div>
+                </div>
+                <button class="btn-primary" id="btn-analyze" onclick="runAnalysis()" disabled>
+                    <span class="btn-text">Analyze Resume</span>
+                    <span class="btn-loader" hidden></span>
+                </button>
+            </div>
+
+            <!-- Results -->
+            <div id="results-ats" class="results" hidden></div>
+        </section>
+
+        <!-- ─── JOB COMPARE TAB ─── -->
+        <section class="tab-panel" id="panel-compare" role="tabpanel">
+            <div class="upload-card glass-card">
+                <div class="upload-grid">
+                    <div class="upload-area" id="dropzone-compare-cv">
+                        <div class="upload-icon">📄</div>
+                        <h3>Your Resume</h3>
+                        <p>Drag & drop or <label for="file-compare-cv" class="upload-link">browse</label></p>
+                        <p class="upload-hint">PDF, DOCX, TXT, RTF, HTML</p>
+                        <input type="file" id="file-compare-cv" accept=".pdf,.docx,.doc,.txt,.rtf,.html,.htm" hidden>
+                        <div class="file-preview" id="preview-compare-cv" hidden>
+                            <span class="file-name" id="fname-compare-cv"></span>
+                            <button class="btn-clear" onclick="clearFile('compare-cv')" title="Remove file">✕</button>
+                        </div>
+                    </div>
+                    <div class="upload-area" id="dropzone-compare-jd">
+                        <div class="upload-icon">💼</div>
+                        <h3>Job Description</h3>
+                        <p>Paste below or <label for="file-compare-jd" class="upload-link">upload file</label></p>
+                        <input type="file" id="file-compare-jd" accept=".pdf,.docx,.doc,.txt,.rtf,.html,.htm" hidden>
+                        <div class="file-preview" id="preview-compare-jd" hidden>
+                            <span class="file-name" id="fname-compare-jd"></span>
+                            <button class="btn-clear" onclick="clearFile('compare-jd')" title="Remove file">✕</button>
+                        </div>
+                    </div>
+                </div>
+                <textarea id="jd-text" class="jd-textarea" rows="6" placeholder="Paste the job description or listing here…"></textarea>
+                <button class="btn-primary" id="btn-compare" onclick="runComparison()" disabled>
+                    <span class="btn-text">Compare & Analyze</span>
+                    <span class="btn-loader" hidden></span>
+                </button>
+            </div>
+
+            <!-- Results -->
+            <div id="results-compare" class="results" hidden></div>
+        </section>
+
+    </main>
+
+    <!-- ─── Footer ─── -->
+    <footer class="footer">
+        <div class="container">
+            <p>Open ATS Check — Open-source ATS resume scanner</p>
+        </div>
+    </footer>
+
+    <!-- ─── Error Toast ─── -->
+    <div class="toast" id="toast" hidden>
+        <span class="toast-icon">⚠️</span>
+        <span class="toast-msg" id="toast-msg"></span>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
