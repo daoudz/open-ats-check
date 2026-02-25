@@ -39,8 +39,9 @@ Supports **PDF**, **DOCX**, **TXT**, **RTF**, and **HTML** resume files (up to 1
 
 ## 🖥️ Screenshots
 
-The app features a modern dark theme with glassmorphism, animated score circles, and responsive design.
 
+The app features a modern dark theme with glassmorphism, animated score circles, and responsive design.
+<img width="889" height="907" alt="image" src="https://github.com/user-attachments/assets/45bca944-e4fc-4436-a74f-562e550cf678" />
 ---
 
 ## 🚀 Quick Start
