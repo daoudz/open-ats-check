@@ -4,7 +4,8 @@ Serves the frontend and exposes API endpoints for resume analysis.
 """
 
 import os
-from flask import Flask, request, jsonify, send_from_directory
+import time
+from flask import Flask, request, jsonify, send_from_directory, make_response
 from parsers import extract_text
 from ats_checker import analyze_resume
 from job_matcher import compare_cv_to_job
@@ -54,9 +55,15 @@ def analyze():
         }), 400
 
     try:
+        # Reset file stream to beginning to ensure we read the full content
+        file.stream.seek(0)
+
         # Parse the file
         result = extract_text(file, filename=file.filename)
         text = result['text']
+
+        print(f"[ANALYZE] File: {file.filename}, Extracted {len(text)} chars, {len(text.split())} words")
+        print(f"[ANALYZE] Preview: {text[:200]}...")
 
         if not text or len(text.strip()) < 20:
             return jsonify({
@@ -72,12 +79,21 @@ def analyze():
             'text_length': len(text),
             'word_count': len(text.split()),
         }
+        # Include text preview so user can verify correct file was parsed
+        analysis['text_preview'] = text[:300] + ('...' if len(text) > 300 else '')
+        analysis['timestamp'] = time.time()
 
-        return jsonify(analysis)
+        resp = make_response(jsonify(analysis))
+        resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        resp.headers['Pragma'] = 'no-cache'
+        resp.headers['Expires'] = '0'
+        return resp
 
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': f'An error occurred while analyzing the file: {str(e)}'}), 500
 
 
@@ -119,9 +135,14 @@ def compare():
         }), 400
 
     try:
+        # Reset file stream to beginning
+        file.stream.seek(0)
+
         # Parse resume
         result = extract_text(file, filename=file.filename)
         cv_text = result['text']
+
+        print(f"[COMPARE] File: {file.filename}, Extracted {len(cv_text)} chars")
 
         if not cv_text or len(cv_text.strip()) < 20:
             return jsonify({
@@ -142,14 +163,22 @@ def compare():
                 'filename': file.filename,
                 'format': result['format'],
                 'word_count': len(cv_text.split()),
-            }
+            },
+            'text_preview': cv_text[:300] + ('...' if len(cv_text) > 300 else ''),
+            'timestamp': time.time(),
         }
 
-        return jsonify(response)
+        resp = make_response(jsonify(response))
+        resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        resp.headers['Pragma'] = 'no-cache'
+        resp.headers['Expires'] = '0'
+        return resp
 
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': f'An error occurred: {str(e)}'}), 500
 
 

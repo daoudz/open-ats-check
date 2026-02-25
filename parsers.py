@@ -41,6 +41,12 @@ def extract_text(file_storage, filename=None):
     if parser is None:
         raise ValueError(f"Unsupported file format: {ext}. Supported: {', '.join(parsers.keys())}")
 
+    # Ensure stream is at the beginning (critical for Flask FileStorage objects)
+    if hasattr(file_storage, 'seek'):
+        file_storage.seek(0)
+    elif hasattr(file_storage, 'stream'):
+        file_storage.stream.seek(0)
+
     raw_bytes = file_storage.read()
     text = parser(raw_bytes)
     text = _clean_text(text)

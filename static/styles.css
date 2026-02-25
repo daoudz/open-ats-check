@@ -43,7 +43,9 @@
 }
 
 /* ─── Reset ─── */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -92,8 +94,15 @@ body {
 }
 
 @keyframes float-glow {
-    0%, 100% { transform: translate(0, 0); }
-    50% { transform: translate(30px, -40px); }
+
+    0%,
+    100% {
+        transform: translate(0, 0);
+    }
+
+    50% {
+        transform: translate(30px, -40px);
+    }
 }
 
 /* ─── Container ─── */
@@ -129,8 +138,17 @@ body {
 }
 
 @keyframes pulse-icon {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.7; transform: scale(1.1); }
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.7;
+        transform: scale(1.1);
+    }
 }
 
 .logo-text {
@@ -206,8 +224,15 @@ body {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* ─── Glass Card ─── */
@@ -254,8 +279,15 @@ body {
 }
 
 @keyframes bounce-icon {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-6px); }
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-6px);
+    }
 }
 
 .upload-area h2,
@@ -406,7 +438,9 @@ body {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* ─── Results ─── */
@@ -666,8 +700,13 @@ body {
     gap: 8px;
 }
 
-.proscons-col.pros h3 { color: var(--accent-green); }
-.proscons-col.cons h3 { color: var(--accent-red); }
+.proscons-col.pros h3 {
+    color: var(--accent-green);
+}
+
+.proscons-col.cons h3 {
+    color: var(--accent-red);
+}
 
 .proscons-list {
     list-style: none;
@@ -689,8 +728,13 @@ body {
     margin-right: 8px;
 }
 
-.pros .proscons-list li::before { content: '✅'; }
-.cons .proscons-list li::before { content: '❌'; }
+.pros .proscons-list li::before {
+    content: '✅';
+}
+
+.cons .proscons-list li::before {
+    content: '❌';
+}
 
 /* ─── Keyword Pills ─── */
 .keyword-section {
@@ -776,6 +820,63 @@ body {
     color: var(--text-heading);
 }
 
+/* ─── Text Preview ─── */
+.text-preview {
+    background: var(--bg-card);
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-sm);
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.text-preview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: var(--transition);
+}
+
+.text-preview-header:hover {
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-heading);
+}
+
+.text-preview-toggle {
+    transition: transform 0.3s ease;
+    font-size: 10px;
+}
+
+.text-preview.expanded .text-preview-toggle {
+    transform: rotate(180deg);
+}
+
+.text-preview-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+}
+
+.text-preview.expanded .text-preview-content {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.text-preview-content pre {
+    padding: 12px 16px;
+    font-family: var(--font);
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text-muted);
+    white-space: pre-wrap;
+    word-break: break-word;
+    border-top: 1px solid var(--border-subtle);
+}
+
 /* ─── Toast ─── */
 .toast {
     position: fixed;
@@ -812,6 +913,7 @@ body {
 
 /* ─── Responsive ─── */
 @media (max-width: 700px) {
+
     .upload-grid,
     .section-grid,
     .proscons-grid {

@@ -96,7 +96,7 @@ function clearFile(key) {
 function updateButtonStates() {
     const btnAnalyze = document.getElementById('btn-analyze');
     const btnCompare = document.getElementById('btn-compare');
-    
+
     if (btnAnalyze) btnAnalyze.disabled = !selectedFiles['ats'];
     if (btnCompare) {
         const hasCV = !!selectedFiles['compare-cv'];
@@ -116,8 +116,13 @@ async function runAnalysis() {
     formData.append('resume', selectedFiles['ats']);
 
     try {
-        const resp = await fetch('/api/analyze', { method: 'POST', body: formData });
+        const resp = await fetch('/api/analyze', {
+            method: 'POST',
+            body: formData,
+            headers: { 'Cache-Control': 'no-cache' },
+        });
         const data = await resp.json();
+        console.log('[ATS Analysis Response]', data);
 
         if (!resp.ok) {
             showToast(data.error || 'Analysis failed.');
@@ -153,8 +158,13 @@ async function runComparison() {
     }
 
     try {
-        const resp = await fetch('/api/compare', { method: 'POST', body: formData });
+        const resp = await fetch('/api/compare', {
+            method: 'POST',
+            body: formData,
+            headers: { 'Cache-Control': 'no-cache' },
+        });
         const data = await resp.json();
+        console.log('[Compare Response]', data);
 
         if (!resp.ok) {
             showToast(data.error || 'Comparison failed.');
@@ -202,6 +212,7 @@ function renderATSResults(data, container) {
 
     container.innerHTML = `
         ${renderFileInfo(fileInfo)}
+        ${renderTextPreview(data.text_preview)}
         ${renderScoreHero(overall, 'ATS Compatibility Score')}
         <div class="section-grid">
             ${sections.map(s => renderSectionCard(s)).join('')}
@@ -226,6 +237,7 @@ function renderCompareResults(data, container) {
 
     container.innerHTML = `
         ${renderFileInfo(fileInfo)}
+        ${renderTextPreview(data.text_preview)}
         ${renderScoreHero(matchScore, 'Job Match Score')}
         ${renderProsConsCols(comparison.pros || [], comparison.cons || [])}
         ${renderKeywordAnalysis(comparison.keyword_analysis || {})}
@@ -251,6 +263,22 @@ function renderFileInfo(info) {
             <span>📎 <strong>${escapeHtml(info.filename || 'Resume')}</strong></span>
             <span>Format: <strong>${(info.format || '').toUpperCase()}</strong></span>
             <span>Words: <strong>${info.word_count || '—'}</strong></span>
+            <span>Chars: <strong>${info.text_length || '—'}</strong></span>
+        </div>
+    `;
+}
+
+function renderTextPreview(preview) {
+    if (!preview) return '';
+    return `
+        <div class="text-preview">
+            <div class="text-preview-header" onclick="this.parentElement.classList.toggle('expanded')">
+                <span>📝 Extracted Text Preview</span>
+                <span class="text-preview-toggle">▼</span>
+            </div>
+            <div class="text-preview-content">
+                <pre>${escapeHtml(preview)}</pre>
+            </div>
         </div>
     `;
 }
@@ -275,8 +303,8 @@ function renderScoreHero(score, label) {
             </div>
             <p class="score-label">
                 ${score >= 70 ? '🟢 <strong>Good</strong> — Your resume is ATS-friendly'
-                    : score >= 40 ? '🟡 <strong>Needs Improvement</strong> — Several areas to optimize'
-                    : '🔴 <strong>Low Score</strong> — Significant improvements needed'}
+            : score >= 40 ? '🟡 <strong>Needs Improvement</strong> — Several areas to optimize'
+                : '🔴 <strong>Low Score</strong> — Significant improvements needed'}
             </p>
         </div>
     `;
@@ -307,9 +335,9 @@ function renderRecommendations(recos) {
             <h3>💡 Recommendations</h3>
             <ul class="reco-list">
                 ${recos.map((r, i) => {
-                    const prio = i < 3 ? 'high' : i < 6 ? 'medium' : 'low';
-                    return `<li class="reco-item ${prio}"><strong>${escapeHtml(r.section)}:</strong> ${escapeHtml(r.text)}</li>`;
-                }).join('')}
+        const prio = i < 3 ? 'high' : i < 6 ? 'medium' : 'low';
+        return `<li class="reco-item ${prio}"><strong>${escapeHtml(r.section)}:</strong> ${escapeHtml(r.text)}</li>`;
+    }).join('')}
             </ul>
         </div>
     `;
@@ -321,10 +349,10 @@ function renderCompareRecommendations(recos) {
             <h3>💡 Recommendations to Improve Match</h3>
             <ul class="reco-list">
                 ${recos.map(r => {
-                    const prio = r.priority || 'medium';
-                    const icon = r.action === 'add' ? '➕' : r.action === 'remove' ? '➖' : '🔧';
-                    return `<li class="reco-item ${prio}">${icon} ${escapeHtml(r.text)}</li>`;
-                }).join('')}
+        const prio = r.priority || 'medium';
+        const icon = r.action === 'add' ? '➕' : r.action === 'remove' ? '➖' : '🔧';
+        return `<li class="reco-item ${prio}">${icon} ${escapeHtml(r.text)}</li>`;
+    }).join('')}
             </ul>
         </div>
     `;
@@ -337,14 +365,14 @@ function renderProsConsCols(pros, cons) {
                 <h3>✅ Strengths</h3>
                 <ul class="proscons-list">
                     ${pros.length ? pros.map(p => `<li>${escapeHtml(p)}</li>`).join('')
-                        : '<li style="color:var(--text-muted)">No specific strengths detected</li>'}
+            : '<li style="color:var(--text-muted)">No specific strengths detected</li>'}
                 </ul>
             </div>
             <div class="proscons-col cons">
                 <h3>❌ Gaps</h3>
                 <ul class="proscons-list">
                     ${cons.length ? cons.map(c => `<li>${escapeHtml(c)}</li>`).join('')
-                        : '<li style="color:var(--text-muted)">No critical gaps detected</li>'}
+            : '<li style="color:var(--text-muted)">No critical gaps detected</li>'}
                 </ul>
             </div>
         </div>
